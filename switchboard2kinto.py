@@ -14,31 +14,37 @@ def _print(msg):
 
 
 def push(client):
+    with open('config.json') as f:
+        SCHEMA_V1 = json.load(f)['collections']
+
     with open('experiments.json') as f:
         experiments = json.loads(f.read())
 
     count = 0
-    client.create_collection('experiments', if_not_exists=True)
+    client.create_collection('experiments',
+                             data=SCHEMA_V1['experiments']['config'],
+                             permissions={"read": ["system.Everyone"]},
+                             safe=False)
 
     kinto_experiments = {}
     for record in list(client.get_records()):
         kinto_experiments[record['name']] = record
 
+    with client.batch() as b:
+        for key, experiment in experiments.items():
+            _print('.')
+            experiment['name'] = key
 
-    for key, experiment in experiments.items():
-        _print('.')
-        experiment['name'] = key
+            if key in kinto_experiments:
+                # update
+                experiment['id'] = kinto_experiments[key]['id']
+            else:
+                # creation
+                hashed_key = hashlib.md5(key.encode('utf8')).hexdigest()
+                experiment['id'] = str(uuid.UUID(hashed_key))
 
-        if key in kinto_experiments:
-            # update
-            experiment['id'] = kinto_experiments[key]['id']
-        else:
-            # creation
-            hashed_key = hashlib.md5(key.encode('utf8')).hexdigest()
-            experiment['id'] = str(uuid.UUID(hashed_key))
-
-        client.update_record(experiment)
-        count += 1
+            b.update_record(experiment)
+            count += 1
 
     _print('\nChanged %d records\n' % count)
 
