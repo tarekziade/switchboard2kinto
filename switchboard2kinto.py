@@ -18,6 +18,7 @@ def push(client):
         experiments = json.loads(f.read())
 
     count = 0
+    client.create_collection('experiments', if_not_exists=True)
 
     kinto_experiments = {}
     for record in list(client.get_records()):
