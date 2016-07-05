@@ -5,10 +5,10 @@ DEV_STAMP = $(VENV)/.dev_env_installed.stamp
 INSTALL_STAMP = $(VENV)/.install.stamp
 TEMPDIR := $(shell mktemp -d)
 
-.PHONY: virtualenv 
+.PHONY: virtualenv
 
-OBJECTS = .venv 
-
+OBJECTS = .venv
+SERVER = https://kinto-ota.dev.mozaws.net/v1/
 
 build: $(PYTHON)
 $(PYTHON):
@@ -16,4 +16,4 @@ $(PYTHON):
 	$(VENV)/bin/pip install -r requirements.txt
 
 sync:
-	$(PYTHON) switchboard2kinto.py --auth $(AUTH)
+	$(PYTHON) switchboard2kinto.py --auth $(AUTH) -s $(SERVER)

@@ -26,12 +26,13 @@ def push(client):
 
     for key, experiment in experiments.items():
         _print('.')
+        experiment['name'] = key
+
         if key in kinto_experiments:
             # update
             experiment['id'] = kinto_experiments[key]['id']
         else:
             # creation
-            experiment['name'] = key
             hashed_key = hashlib.md5(key.encode('utf8')).hexdigest()
             experiment['id'] = str(uuid.UUID(hashed_key))
 
